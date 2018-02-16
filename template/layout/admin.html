@@ -42,7 +42,6 @@
 <body style="font-family: 'microsoft yahei', arial">
 
 <div id="wrapper">
-    <!-- Navigation -->
     <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -77,19 +76,13 @@
                         <span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
                         <li >
-                            <a {% if active=='user' %} class="active"{% endif %} href="/admin/user">客户账户</a>
+                            <a {% if active=='user' %} class="active"{% endif %} href="/admin/admin_user">后台用户</a>
                         </li>
                         <li >
-                            <a {% if active=='saler' %} class="active"{% endif %} href="/admin/saler">经销商</a>
+                            <a {% if active=='saler' %} class="active"{% endif %} href="/admin/shop_manager">店长</a>
                         </li>
                         <li>
-                            <a {% if active=='store' %} class="active"{% endif %} href="/admin/store">修理厂</a>
-                        </li>
-                        <li>
-                            <a {% if active=='admin_user' %}class="active" {% endif %}href="/admin/admin_user/{{handler.get_admin_user().id}}">后台用户</a>
-                        </li>
-                        <li>
-                            <a {% if active=='admin_referee' %}class="active" {% endif %}href="/admin/admin_referee">推广人员管理</a>
+                            <a {% if active=='store' %} class="active"{% endif %} href="/admin/user">客户</a>
                         </li>
                     </ul>
                     </li>

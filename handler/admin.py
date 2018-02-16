@@ -75,8 +75,6 @@ class ProductHandler(AdminBaseHandler):
             ft &= (Product.active == active)
         if keyword:
             ft &= (Product.name.contains(keyword))
-        # if category:
-        #     ft &= (Product.category == category)
         products = Product.select().where(ft)
         total = products.count()
         if total % pagesize > 0:
@@ -149,6 +147,34 @@ class ProductDelHandler(AdminBaseHandler):
         except:
             pass
         self.redirect('/admin/products')
+
+
+@Route(r'/admin/shop_manager', name='admin_shop_manager')  # 店长列表
+class AdminShopManagerHandler(AdminBaseHandler):
+    def get(self):
+        page = int(self.get_argument("page", '1'))
+        keyword = self.get_argument("keyword", None)
+        pagesize = setting.ADMIN_PAGESIZE
+        ft = User.grade.contains('A')
+        if keyword:
+            ft &= (User.name.contains(keyword))
+        users = User.select().where(ft)
+        total = users.count()
+        if total % pagesize > 0:
+            totalpage = total / pagesize + 1
+        else:
+            totalpage = total / pagesize
+        users = users.paginate(page, pagesize)
+
+        self.render('admin/shop_manager.html', active='shop_manager', users=users, total=total,
+                    page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
+
+
+@Route(r'/admin/upload_file', name='admin_upload_file')  # 图片上传
+class UploadFileHandler(AdminBaseHandler):
+    def get(self):
+        data = self.get_argument('data', '')
+        self.render('admin/add_file.html', active='pic', data=data)
 
 
 # ---------------------------------------------微信端---------------------------------------------------

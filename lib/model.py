@@ -88,8 +88,8 @@ class AdminUser(db.Model):
 # 用户表
 class User(db.Model):
     id = PrimaryKeyField()  # 主键
-    openid = CharField(unique=True, max_length=255)
-    name = CharField(max_length=32)  # 姓名
+    openid = CharField(unique=True, max_length=255)  # 微信openid
+    name = CharField(max_length=32)  # 昵称
     mobile = CharField(max_length=32)  # 电话
     code = CharField(max_length=32)  # 推广码
     pid = IntegerField(default=0)  # 由哪个用户推广而来，上级用户ID
