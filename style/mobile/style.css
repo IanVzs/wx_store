@@ -1,0 +1,76 @@
+.p_name {
+padding: 0.3rem;
+}
+
+.p_font_title {
+font-size: 0.7rem;
+}
+
+.p_share {
+padding: 0.1rem 0rem;
+text-align: center;
+color:#aaa;
+}
+
+.p_small_font {
+font-size:0.4rem;
+    color:#aaa;
+}
+
+.p_price {
+line-height:1.5rem;
+color: red;
+font-size: 0.9rem;
+}
+
+.p_score {
+line-height:1.5rem;
+color: #4cd964;
+font-size: 0.9rem;
+}
+
+.p_sale {
+line-height:1.5rem;
+color: #aaa;
+font-size:0.6rem;
+padding-left:1rem;
+}
+
+.p_detail {
+width: 100%;
+margin: 0;
+padding:0;
+display: block;
+word-wrap: break-word;
+}
+
+.p_detail img {
+width: 100%;
+max-width: 750px;
+vertical-align: top;
+border: 0;
+}
+
+.p_para_title {
+font-size: 0.7rem;
+margin:0 1.5rem;
+line-height:2rem;
+}
+
+.p_para_body {
+font-size: 0.7rem;
+text-align: center;
+margin:0 1.5rem;
+padding:0;
+border-top: thin solid #eee;
+}
+
+.p_para_item {
+border-bottom:thin solid #eee;
+margin: 0;
+line-height:1.6rem;
+}
+
+.p_para_item_left {
+border-right:thin solid #eee;
+}

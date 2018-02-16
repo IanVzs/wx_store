@@ -1,0 +1,74 @@
+@charset "utf-8";
+*,
+::before,
+::after{
+	/* 选择所有标签 */
+	margin:0;
+	padding: 0;
+	/* 清除移动设备默认的 点击高亮 */
+	-webkit-tap-highlight-color:transparent;
+	/* 设置所有都是以边框开始计算宽度 百分比 */
+	-webkit-box-sizing: border-box; /*兼容*/
+	box-sizing:border-box;
+}
+html {
+	font-size:62.5%; /*1rem = 10px*/
+	overflow-x:hidden;
+}
+
+body,textarea,input,select,option{
+  font-family:"Microsoft YaHei",sans-serif;/*设备默认字体*/
+  color:#333;
+  margin:0 auto;
+  background: #F1F1F1;
+}
+img,object,embed {
+	max-width:100%;
+	width:100%;
+	-ms-interpolation-mode: bicubic;
+	border:0;
+}
+h1,h2,h3,h4,h5,h6 {
+	font-size:100%;
+}
+table {
+	border-collapse:collapse;
+}
+ol,ul {
+	list-style-type:none;
+}
+.clear {
+	clear:both;
+	overflow:hidden;
+}
+a {
+	text-decoration:none;
+	color:#333;
+}
+a:hover{
+	text-decoration:none;
+}
+a,textarea,input{
+	outline:none;
+}
+button,input,textarea{
+	-webkit-tap-highlight-color: rgba(0,0,0,0;);
+    -webkit-user-modify:read-write-plaintext-only; 
+}
+.z_index{
+	position:fixed;
+	_position:absolute;
+	z-index:999;
+	display:none;
+}
+label,label input{
+	vertical-align:middle;
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,488 @@
+{% extends "layout/admin.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">汇总信息</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3 col-sm-6">
+        <div class="panel">
+            <div class="panel-heading text-center bg-success no-border">
+                <i class="fa fa-group fa-3x margin top bottom text-white"></i>
+            </div>
+            <div class="inner-t inner-b text-center clearfix">
+                <div class="col-xs-4">
+                    <div class="h2 font-bold"><a href="/admin/user">{{report['user']}}</a></div>
+                    <span class="text-muted">客户</span>
+                </div>
+                <div class="col-xs-4">
+                    <div class="h2 font-bold"><a href="/admin/saler">{{report['saler']}}</a></div>
+                    <span class="text-muted">经销商</span>
+                </div>
+                <div class="col-xs-4">
+                    <div class="h2 font-bold"><a href="/admin/store">{{report['store']}}</a></div>
+                    <span class="text-muted">门店</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <!-- Google+ Stats  Widget -->
+        <div class="panel">
+            <div class="panel-heading no-border bg-danger text-center clearfix">
+
+                <i class="fa fa-picture-o fa fa-3x margin top bottom text-white"></i>
+
+            </div>
+            <div class="inner-t inner-b text-center clearfix">
+                <div class="col-xs-6 border right">
+                    <div class="h2 font-bold"><a href="/admin/product/0?status=1">{{report['product_n']}}</a></div>
+                    <span class="text-muted">普通商品</span>
+                </div>
+                <div class="col-xs-6">
+                    <div class="h2 font-bold"><a href="/admin/product/1?status=1">{{report['product_s']}}</a></div>
+                    <span class="text-muted">积分商品</span>
+                </div>
+            </div>
+        </div>
+        <!-- End of Google+ Stats Widget -->
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="panel">
+            <div class="panel-heading text-center bg-warning no-border">
+                <i class="fa fa-money fa-3x margin top bottom text-white"></i>
+            </div>
+            <div class="inner-t inner-b text-center clearfix">
+                <div class="h2 font-bold"><a href="/admin/insurance">{{report['insurance']}}</a></div>
+                <span class="text-muted">保险公司</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <!-- Facebook Stats  Widget -->
+        <div class="panel">
+            <div class="panel-heading no-border bg-info text-center clearfix">
+
+                <i class="fa fa-align-justify fa-3x margin top bottom text-white"></i>
+
+            </div>
+            <div class="inner-t inner-b text-center clearfix">
+                <div class="col-xs-6 border right">
+                    <div class="h2 font-bold"><a href="/admin/insurance_orders">{{report['order_i']}}</a></div>
+                    <span class="text-muted">保险订单</span>
+                </div>
+                <div class="col-xs-6">
+                    <div class="h2 font-bold"><a href="/admin/product_orders">{{report['order_n']}}</a></div>
+                    <span class="text-muted">商品订单</span>
+                </div>
+            </div>
+        </div>
+        <!-- End of Facebook Stats Widget -->
+    </div>
+
+
+</div>
+<div class="row">
+    <div class="col-lg-6" id="store_io_Div"></div>
+    <div class="col-lg-6" id="iioDiv"></div>
+</div>
+<div class="row">
+    <div class="col-lg-6" id="areaioDiv"></div>
+    <div class="col-lg-6" id="ioTime"></div>
+</div>
+
+<div style="height:25px"></div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title" style="height:20px;">
+                    <span class="pull-left">系统日志　</span>
+                    <span class="pull-right" ><a href="/admin/log" style="font-size:10px; color:#888;">全部日志</a></span>
+                </h3>
+
+            </div>
+            <div class="panel-body">
+
+                <div style="word-wrap: break-word;word-break: keep-all;">
+                    <table class="table" id="tb_users" >
+                        <tbody>
+                        <tr>
+                            <th style="width:10px">用户名</th>
+                            <th style="width:180px">时间</th>
+                            <th style="width:600px">内容</th>
+                        </tr>
+                        {% for o in logs -%}
+                        <tr>
+                            <td width="10%">
+                                {{o.admin_user.realname}}
+                            </td>
+                            <td width="20%">
+                                {{o.created | datetimeformat}}
+                            </td>
+                            <td width="70%">
+                                <div style="width:600px;">
+                                    {{o.content}}
+                                </div>
+                            </td>
+                        </tr>
+                        {%- endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript" src="/style/js/ichart/ichart.1.2.1.min.js"></script>
+<script type="text/javascript">
+    //按保险公司统计单量
+    var iio_data = JSON.parse('{{iio}}');
+    $(function(){
+        var chart = new iChart.Pie2D({
+            render : 'iioDiv',
+            data: iio_data,
+            title : {
+                text : '保险公司出单统计',
+                color : '#3e576f'
+            },
+            sub_option : {
+                label : {
+                    background_color:null,
+                    sign:false,//设置禁用label的小图标
+                    padding:'0 4',
+                    border:{
+                        enable:false,
+                        color:'#666666'
+                    },
+                    fontsize:11,
+                    fontweight:600,
+                    color : '#4572a7'
+                },
+                border : {
+                    width : 2,
+                    color : '#ffffff'
+                }
+            },
+            shadow : true,
+            shadow_blur : 6,
+            shadow_color : '#aaaaaa',
+            shadow_offsetx : 0,
+            shadow_offsety : 0,
+            background_color:'#fefefe',
+            offsetx:-60,//设置向x轴负方向偏移位置60px
+            offset_angle:-120,//逆时针偏移120度
+            showpercent:true,
+            decimalsnum:2,
+            width : 600,
+            height : 600,
+            radius:120
+        });
+        chart.draw();
+    });
+
+    //门店数量变化&平台出单量统计
+    $(function() {
+        var data = JSON.parse('{{io_add}}');
+        var data1 = [
+            {
+                name : '',
+                value:JSON.parse('{{store_add}}'),
+                color:'#34a1d9',
+                line_width:5
+            }
+        ];
+
+        var chart = new iChart.Column2D({
+            render : 'store_io_Div',
+            data : data,
+            title:{
+                text:'个人算单时间&平均算单时间',
+                color:'#4572a7',
+                textAlign:'left',
+                padding:'0 40',
+                border:{
+                    enable:true,
+                    width:[0,0,4,0],
+                    color:'#4572a7'
+                },
+                height:40
+            },
+            width : 1000,
+            height : 600,
+            padding:0,
+            label : {
+                fontsize:11,
+                fontweight:600,
+                color : '#666666'
+            },
+            shadow : true,
+            shadow_blur : 2,
+            shadow_color : '#aaaaaa',
+            shadow_offsetx : 1,
+            shadow_offsety : 0,
+            background_color : '#f7f7f7',
+            column_width : 62,
+            sub_option : {
+                label : false,
+                border : {
+                    width : 2,
+                    radius : '5 5 0 0',//上圆角设置
+                    color : '#ffffff'
+                }
+            },
+            coordinate : {
+                background_color : null,
+                grid_color : '#c0c0c0',
+                width : 680,
+                height:220,
+                axis : {
+                    color : '#c0d0e0',
+                    width : [0, 0, 1, 0]
+                },
+                scale : [{
+                    position : 'left',
+                    start_scale : 0,
+                    end_scale : 1200,
+                    scale_space : 200,
+                    scale_enable : false,
+                    label : {
+                        fontsize:11,
+                        fontweight:600,
+                        color : '#666666'
+                    }
+                },{
+                    position:'right',
+                    start_scale:0,
+                    scale_space:200,
+                    end_scale:1200,
+                    scale_enable : false,
+                    scaleAlign:'right',
+                    label:{
+                        fontsize:11,
+                        fontweight:600,
+                        color:'#666666'
+                    }
+                }]
+            }
+        });
+        //构造折线图
+        var line = new iChart.LineBasic2D({
+            z_index:1000,
+            data: data1,
+            label:{
+                color:'#4c4f48'
+            },
+            point_space:chart.get('column_width')+chart.get('column_space'),
+            scaleAlign : 'right',
+            sub_option : {
+                label:false,
+                point_size:22
+            },
+            coordinate:chart.coo//共用坐标系
+        });
+
+        chart.plugin(line);
+
+
+        //利用自定义组件构造左侧说明文本
+        chart.plugin(new iChart.Custom({
+            drawFn:function(){
+                //计算位置
+                var coo = chart.getCoordinate(),
+                    x = coo.get('originx'),
+                    y = coo.get('originy');
+                //在左上侧的位置，渲染一个单位的文字
+                chart.target.textAlign('start')
+                    .textBaseline('bottom')
+                    .textFont('600 16px Verdana')
+                    .fillText('个人算单时间',x-20,y-20,false,'#c52120')
+                    .textFont('600 11px Verdana')
+
+                //在右上侧的位置，渲染一个单位的文字
+                chart.target.textAlign('end')
+                    .textBaseline('bottom')
+                    .textFont('600 16px Verdana')
+                    .fillText('平均算单时间',x+20+coo.width,y-20,false,'#34a1d9')
+                    .textFont('600 11px Verdana')
+            }
+        }));
+
+        chart.draw();
+    });
+    //按区域统计保险单量
+    $(function(){
+        var areaio_data = JSON.parse('{{io}}');
+        var chart = new iChart.Column2D({
+            render : 'areaioDiv',//渲染的Dom目标,canvasDiv为Dom的ID
+            data: areaio_data,//绑定数据
+            title : {
+                text:'区域保险单量统计',
+                color:'#4572a7'
+            },
+            width : 600,//设置宽度，默认单位为px
+            height : 600,//设置高度，默认单位为px
+            offsety : -5,
+            offsety : -70,
+            label : {
+                fontsize:14,
+                textAlign:'right',
+                textBaseline:'middle',
+                rotate:-30,
+                color : '#4572a7'
+            },
+            coordinate:{//配置自定义坐标轴
+                scale:[{//配置自定义值轴
+                    position:'left',//配置左值轴
+                    start_scale:0,//设置开始刻度为0
+                    end_scale:1000,//设置结束刻度为26
+                    scale_space:100,//设置刻度间距
+                    listeners:{//配置事件
+                        parseText:function(t,x,y){//设置解析值轴文本
+                            return {text:t+" 单"}
+                        }
+                    }
+                }]
+            }
+        });
+        //调用绘图方法开始绘图
+        chart.draw();
+    });
+
+    //客服算单耗时统计
+    $(function() {
+        var data = JSON.parse('{{personal_handling_time}}');
+        console.log(data);
+        var data1 = [
+            {
+                name : '',
+                value: JSON.parse('{{all_handling_time}}'),
+                color:'#34a1d9',
+                line_width:5
+            }
+        ];
+        console.log(data1);
+        var chart = new iChart.Column2D({
+            render : 'ioTime',
+            data : data,
+            title:{
+                text:'客服算单耗时统计',
+                color:'#4572a7',
+                textAlign:'left',
+                padding:'0 40',
+                border:{
+                    enable:true,
+                    width:[0,0,4,0],
+                    color:'#4572a7'
+                },
+                height:40
+            },
+            width : 1000,
+            height : 600,
+            padding:0,
+            label : {
+                fontsize:11,
+                fontweight:600,
+                color : '#666666'
+            },
+            shadow : true,
+            shadow_blur : 2,
+            shadow_color : '#aaaaaa',
+            shadow_offsetx : 1,
+            shadow_offsety : 0,
+            background_color : '#f7f7f7',
+            column_width : 62,
+            sub_option : {
+                label : false,
+                border : {
+                    width : 2,
+                    radius : '5 5 0 0',//上圆角设置
+                    color : '#ffffff'
+                }
+            },
+            coordinate : {
+                background_color : null,
+                grid_color : '#c0c0c0',
+                width : 680,
+                height:220,
+                axis : {
+                    color : '#c0d0e0',
+                    width : [0, 0, 1, 0]
+                },
+                scale : [{
+                    position : 'left',
+                    start_scale : 0,
+                    end_scale : 120,
+                    scale_space : 20,
+                    scale_enable : false,
+                    label : {
+                        fontsize:11,
+                        fontweight:600,
+                        color : '#666666'
+                    }
+                },{
+                    position:'right',
+                    start_scale:0,
+                    scale_space:200,
+                    end_scale:1200,
+                    scale_enable : false,
+                    scaleAlign:'right',
+                    label:{
+                        fontsize:11,
+                        fontweight:600,
+                        color:'#666666'
+                    }
+                }]
+            }
+        });
+        //构造折线图
+        var line = new iChart.LineBasic2D({
+            z_index:1000,
+            data: data1,
+            label:{
+                color:'#4c4f48'
+            },
+            point_space:chart.get('column_width')+chart.get('column_space'),
+            scaleAlign : 'right',
+            sub_option : {
+                label:false,
+                point_size:22
+            },
+            coordinate:chart.coo//共用坐标系
+        });
+
+        chart.plugin(line);
+
+
+        //利用自定义组件构造左侧说明文本
+        chart.plugin(new iChart.Custom({
+            drawFn:function(){
+                //计算位置
+                var coo = chart.getCoordinate(),
+                    x = coo.get('originx'),
+                    y = coo.get('originy');
+                //在左上侧的位置，渲染一个单位的文字
+                chart.target.textAlign('start')
+                    .textBaseline('bottom')
+                    .textFont('600 16px Verdana')
+                    .fillText('个人算单耗时',x-20,y-20,false,'#c52120')
+                    .textFont('600 11px Verdana')
+
+                //在右上侧的位置，渲染一个单位的文字
+                chart.target.textAlign('end')
+                    .textBaseline('bottom')
+                    .textFont('600 16px Verdana')
+                    .fillText('平均算单耗时',x+20+coo.width,y-20,false,'#34a1d9')
+                    .textFont('600 11px Verdana')
+            }
+        }));
+
+        chart.draw();
+    });
+
+</script>
+{% endblock %}

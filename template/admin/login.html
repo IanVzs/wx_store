@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>秀丽媤管理系统登录</title>
+    <link rel="stylesheet" type="text/css" href="/style/css/basic.css"/>
+    <link rel="stylesheet" type="text/css" href="/style/css/admin_login.css"/>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/style/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="/style/css/plugins/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/style/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/style/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+</head>
+<body style="background: #EBFBFF;">
+<!--<div class="head">-->
+    <!--&lt;!&ndash;<a href="#"><img src="/style/images/logo.png"/></a>&ndash;&gt;-->
+    <!--<h1 class="jrsc"><a href="#">管理系统</a></h1>-->
+<!--</div>-->
+<div class="main clearfix">
+    <div class="log">
+        <form role="form" action="/admin/login" method="post" style="width:480px;margin-top:100px;margin-left:90px;">
+            {{xsrf()}}
+            <p style="font-size:28px;font-weight:500;marign:30px auto 50px 20px;">欢迎登录</p>
+            <fieldset>
+                {% set messages=handler.get_flashed_messages() %}
+                {% if messages %}
+                <div id="err_div" style="color:#FF0000;">
+                    {% for type, msg in messages%}
+                    {{ msg }}
+                    {% endfor %}
+                </div>
+                {%-endif-%}
+                <div class="form-group" style="margin-top:50px;">
+                    <input class="form-control" placeholder="用户名" id="username" name="username" type="input" autofocus
+                           required>
+                </div>
+                <div class="form-group" style="margin-top:30px;">
+                    <input class="form-control" placeholder="登录密码" id="password" name="password" type="password"
+                           autofocus required>
+                </div>
+                <div style="margin-top:30px;margin-bottom: 50px;" />
+                <input type="submit" id="bt_submit" class="btn btn-lg btn-success btn-block" value="登录">
+            </fieldset>
+        </form>
+    </div>
+</div>
+</body>
+<script src="/style/js/jquery-1.11.1.min.js"></script>
+<script src="/style/js/jquery.twbsPagination.min.js"></script>
+<script src="/style/js/layer-v1.9/layer.js" type="text/javascript"></script>
+<script>
+    var xsrf='{{handler.xsrf_token}}';
+    function getVcode(obj){
+        var username=document.getElementById("username").value;
+        if (username.length > 0) {
+            $.post("/admin/login_getVcode", {name: username, _xsrf:xsrf}, function (data) {
+                result = jQuery.parseJSON(data);
+                if(result.flag==1){
+                    alert('验证码已发送');
+                    addCookie("secondsremained",60,60); //添加cookie记录，有效时间为60s
+                    settime(obj); //开始倒计时
+                }else {
+                    alert(result.msg)
+                }
+            });
+        }else {
+            alert('请输入用户名')
+        }
+    }
+       //倒计时
+    var countdown;
+    function settime(obj){
+        countdown =  getCookieValue("secondsremained");
+        if(countdown <=0){
+            $('#get_vcode').removeAttr("disabled");
+            $('#get_vcode').text("获取验证码");
+            return;
+        }else{
+            if (countdown >= 1){
+                $('#get_vcode').attr("disabled" , true);
+                $('#get_vcode').text("重新发送("+countdown+")");
+                countdown--;
+                editCookie("secondsremained", countdown, countdown+1);
+            }else {
+                $('#get_vcode').removeAttr("disabled");
+                $('#get_vcode').text("获取验证码");
+            }
+        }
+        setTimeout(function(){
+            settime(obj)
+        },1000); //每1000秒执行一次
+    }
+    //发送验证码是添加cookie
+    function addCookie(name,value,expirseHours){
+        var cookieString = name + "=" + escape(value);
+        //判断是否设置过期时间，0代表关闭浏览器时失效
+        if(expirseHours > 0){
+            var date = new Date();
+            date.setTime(date.getTime() + expirseHours * 1000);
+            cookieString = cookieString + ";expires=" + date.toUTCString();
+        }
+        document.cookie = cookieString;
+    }
+    //根据名字获取cookie的值
+    function getCookieValue(name){
+        var strCookie = document.cookie;
+        var arrCookie = strCookie.split("; ");
+        for(var i=0; i < arrCookie.length; i++){
+            var arr = arrCookie[i].split("=");
+            if(arr[0] == name){
+                return unescape(arr[1]);
+                break;
+            }
+        }
+    }
+    function editCookie(name,value,expiresHours){
+        var cookieString = name + "=" + escape(value);
+        if(expiresHours > 0){
+            var date = new Date();
+            date.setTime(date.getTime() + expiresHours * 1000);
+            cookieString = cookieString + ";expires=" + date.toUTCString();
+        }
+        document.cookie = cookieString;
+    }
+
+</script>
+</html>
