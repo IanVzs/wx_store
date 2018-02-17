@@ -51,10 +51,14 @@ class YzScore():
         files = []
         print client.invoke('youzan.crm.customer.points.changelog.get', '3.0.1', 'GET', params=params, files=files)
 
-    def get_score(self, fans_id):
+    def get_score(self, mobile='', open_user_id=''):
         token = auth.Token(token=self.token)
         client = YZClient(token)
-        params = {'fans_id': fans_id}
+        params = {}                     # {'open_user_id': open_user_id}
+        if mobile:
+            params['mobile'] = mobile      # '15929925857'
+        else:
+            params['open_user_id'] = open_user_id
         files = []
         print client.invoke('youzan.crm.fans.points.get', '3.0.1', 'GET', params=params, files=files)
 
@@ -84,7 +88,11 @@ class YzScore():
         client = YZClient(token)
         params = {'weixin_openid': openid}
         files = []
-        return client.invoke('youzan.users.weixin.follower.get', '3.0.0', 'GET', params=params, files=files)
+        r = client.invoke('youzan.users.weixin.follower.get', '3.0.0', 'GET', params=params, files=files)
+        print r
+        true = True
+        exec("m="+r)
+        return m
 
 
 import qrcode
@@ -109,10 +117,9 @@ if __name__ == '__main__':
     #
     yz_score = YzScore()
     yz_score.get_token()
-    yz_score.get_user_info('15929925857')
-    '{"error_response":{"msg":"您的手机号尚未注册，请先注册","code":135200013}}'
+    #yz_score.get_user_info('15929925857')
+    #'{"error_response":{"msg":"您的手机号尚未注册，请先注册","code":135200013}}'
+    #yz_score.get_user_openid("15929925857") # 查询OpenID
+    #yz_score.get_score("15929925857", "oMTlE1a08XjUGNKArU7V0ieQRMXc")   # 获取用户积分（手机可行OpenID无法找到）
+    yz_score.funs_info("oMTlE1a08XjUGNKArU7V0ieQRMXc")  # 查询用户全部信息
     # print(len('{"response":{"user":{"sex":"m","tags":[],"is_follow":true,"points":48,"traded_num":0,"traded_money":"0.00","level_info":{},"user_id":4917946994,"weixin_openid":"oMTlE1a08XjUGNKArU7V0ieQRMXc","nick":"roi","avatar":"http:\/\/wx.qlogo.cn\/mmopen\/CyXNIiaoCwfmRHWR2mFpCgKVZ0ekyPGTNXAibdvbOjf4pbeuOojhJibSIEb00XmJqiciaS94VLsKhnhqyQnPic3VHxriapNMob0vCOx\/132","follow_time":1517811113,"province":"\u9655\u897f","city":"","union_id":"oAE9E0kssuh7J66tFGBP7_rElq0A"}}}'))
-
-
-
-

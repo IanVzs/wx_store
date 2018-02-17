@@ -169,6 +169,25 @@ class AdminShopManagerHandler(AdminBaseHandler):
         self.render('admin/shop_manager.html', active='shop_manager', users=users, total=total,
                     page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
 
+@Route(r'/admin/user', name='admin_user')  # 客户列表
+class AdminShopManagerHandler(AdminBaseHandler):
+    def get(self):
+        page = int(self.get_argument("page", '1'))
+        keyword = self.get_argument("keyword", None)
+        pagesize = setting.ADMIN_PAGESIZE
+        ft = User.grade.contains('C')
+        if keyword:
+            ft &= (User.name.contains(keyword))
+        users = User.select().where(ft)
+        total = users.count()
+        if total % pagesize > 0:
+            totalpage = total / pagesize + 1
+        else:
+            totalpage = total / pagesize
+        users = users.paginate(page, pagesize)
+
+        self.render('admin/user.html', active='user', users=users, total=total,
+                    page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
 
 @Route(r'/admin/upload_file', name='admin_upload_file')  # 图片上传
 class UploadFileHandler(AdminBaseHandler):

@@ -3,7 +3,9 @@
 
 import time
 import re
+import json
 from model import Area
+from give_score.demo import YzScore
 
 def address(value):
     return Area.get_detailed_address(value) if value else '--'
@@ -22,6 +24,15 @@ def dateformat(value, fmt='%Y-%m-%d'):
 
 def dateformat_wx(value, fmt='%Y-%m-%d'):
     return time.strftime(fmt, time.localtime(value)) if value > 0 else ''
+
+def getPointByOpenID(openid):
+    """ 传入用户openID返回用户积分"""
+    a = YzScore()
+    a.get_token()
+    result = a.funs_info(openid)
+    points = result['response']['user']['points']
+    return points
+
 
 def losttime(value):
     days = value/24/60/60
@@ -75,6 +86,7 @@ def register_filters():
     filters['to_hour'] = to_hour
     filters['to_minute'] = to_minute
     filters['toFixed'] = toFixed
+    filters['getPointByOpenID'] = getPointByOpenID
     return filters
 
 ##过滤HTML中的标签
