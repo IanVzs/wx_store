@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/style/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="/style/css/plugins/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Timeline CSS -->
+    <link href="/style/css/plugins/timeline.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/style/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="/style/css/plugins/morris.css" rel="stylesheet">
+
+    <link href="/style/css/chosen.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/style/font-awesome-4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/style/css/jquery.confirm.css" type="text/css" media="screen" />
+
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+
+<body style="font-family: 'microsoft yahei', arial">
+
+<link href="/style/css/store_bigimg.css" rel="stylesheet">
+<script type="text/javascript" src="/style/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="/style/js/bigimg.js"></script>
+
+<div class="mskeLayBg"></div>
+
+<div class="row">
+    <form class="form-horizontal" role="form" action="" method="post">
+        <div class="panel panel-default">
+            <h3 class="panel-title" style="width:100%;height:38px;line-height:38px;background:#528acb;color:#fff;padding-left:15px;border-top-left-radius:4px;border-top-right-radius:4px;">基本信息</h3>
+
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">用户名</label>
+                    <div class="col-sm-6">
+                        <input class="form-control txtName" name="username" id="username" type="text" placeholder="名称不能为空"
+                               value="{{adminUser.username or ''}}" required style="width:480px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">手机号</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" name="mobile" id="mobile" type="text" placeholder="请输入11位手机号码"
+                               value="{{adminUser.mobile or ''}}" required style="width:480px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">Email</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" name="email" id="email" type="text" placeholder="请输入有效邮箱地址"
+                               value="{{adminUser.email or ''}}" required style="width:480px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">密码</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" name="password" id="password" type="text" placeholder="请输入密码"
+                               value="{{adminUser.password or ''}}" required style="width:480px;">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <button type="submit" onclick="close_page()" style="width:90px;height:32px;background:#528acb;color:#fff;border:none;font-size:14px;border-radius:4px;margin-bottom:30px;">保存</button>
+    </form>
+</div>
+
+<script src="/style/xheditor/xheditor-1.2.2.min.js"></script>
+<script src="/style/xheditor/xheditor_lang/zh-cn.js"></script>
+<script src="/style/js/jquery_ocupload.js?v=1"></script>
+<script type="text/javascript" src="/style/js/layer/layer.js"></script>
+<script language="javascript" type="text/javascript" src="/style/js/My97DatePicker/WdatePicker.js"></script>
+<script>
+    // $(function(){
+    //     var xsrf='{{ handler.xsrf_token }}';
+    //     $("#category").change(function(){
+    //         var pid = $(this).val();
+    //         $.ajax({url:"/ajax/get_category/"+pid, success:function(result){
+    //             var obj = JSON.parse(result);
+    //             if(obj.flag == 1)
+    //             {
+    //                 var container = $("#attributeContainer");
+    //                 container.html('');
+    //                 for(var i=0;i<obj.data.length;i++){
+    //                     var item = '<tr> <td name="category_attribute" cid="'+obj.data[i].id+'">'+obj.data[i].name+'</td> <td>';
+    //                     item += '<select class="form-control" name="category_attribute_value" style="width:150px;float:left;margin-right:15px;">';
+    //                     for(var j=0;j<obj.data[i].values.length;j++){
+    //                         item+='<option value="'+obj.data[i].values[j].id+'"> ' + obj.data[i].values[j].name+'</option>'
+    //                     }
+    //                     item += '</select></td> </tr>';
+    //                     container.append(item);
+    //                 }
+    //             }
+    //         }});
+    //     });
+    // });
+    //
+    // $("#pptype").change();
+    // $('#pintro').xheditor({tools:'Source,Fullscreen,Img', html5Upload:false, upImgUrl:"/ajax/upload",upImgExt:"jpg,gif,png"});
+    // var myUpload = $('#fileupload').upload({
+    //         name: 'filedata',
+    //         action: '/ajax/product/pic/0',
+    //         enctype: 'multipart/form-data',
+    //         autoSubmit: true,
+    //         onClick: function(){
+    //
+    //         },
+    //         onSelect: function(){
+    //             var filename=myUpload.filename();
+    //             var ext = filename.substr(filename.length - 3, 3).toLowerCase();
+    //             if (ext != 'jpg' || ext != 'gif' || ext != 'png')
+    //             {
+    //                 alert('false');
+    //                 return false;
+    //             }
+    //         },
+    //         onComplete: function(response) {
+    //             eval('var c = ' + response);
+    //             if (c.id > 0) {
+    //                 $('#pic-box').append('<div class="col-lg-2 .col-xs-12"><div class="panel panel-default"><div class="panel-heading center-block"><img src="' + c.path + '" width="80" height="80"></div><div class="panel-footer"><div class="btn-group btn-group-xs">' +
+    //                     '<a type="button" class="btn btn-default" href="/admin/delpic/'+c.id+'">删除</a><a type="button" class="btn btn-default" href="/admin/primarypic/'+c.id+'">设为主图</a></div></div></div></div>');
+    //
+    //             }
+    //             else{
+    //                 alert(c.path);
+    //             }
+    //
+    //         }
+    //     });
+    //
+    // function submit_product() {
+    //     var block = $("#attributeContainer");
+    //     var category_attribute_value_list = [];
+    //     $("#attributeContainer tr").each(function(index,element){
+    //         var item = {};
+    //         item.attribute_id = $(this).find('td[name="category_attribute"]').attr('cid');
+    //         item.attribute_value_id = $(this).find('select[name="category_attribute_value"]').val();
+    //         category_attribute_value_list.push(item);
+    //     });
+    //     $('#hd_category').val(JSON.stringify(category_attribute_value_list));
+    //     var imgs = [];
+    //     $("#pic-box img[name='product_img']").each(function(index,element){
+    //         imgs.push($(this).attr('src'));
+    //     });
+    //     $('#hd_pic').val(JSON.stringify(imgs));
+    //     return true;
+    // }
+    function pop(title, url) {
+        layer.open({
+            type: 2,
+            title: title,
+            shadeClose: true,
+            shade: 0.8,
+            area: ['90%', '90%'],
+            content: url
+        });
+    }
+
+    var xsrf='{{handler.xsrf_token}}';
+    function close_page(){
+        var username = $("#username").val();
+        var mobile = $("#mobile").val();
+        var email = $("#email").val();
+        var password = $("#password").val();
+        $.ajax({
+            data: {_xsrf:xsrf, username:username, mobile:mobile, email: email, password: password},
+            type: "POST",
+            url: "/admin/admin_user_edit/{{adminUser.id or 0}}",
+            dataType: 'json',
+            success: function (obj) {
+                if (obj.flag == 1) {
+                    var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                    parent.layer.close(index);  // 关闭layer
+                    window.parent.location.reload(); //刷新父页面
+                } else {
+                    layer.alert(obj.msg);
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                layer.alert('操作' + obj.msg);
+            }
+        });
+    }
+</script>
+
+</body>
+
+</html>
+
+
+

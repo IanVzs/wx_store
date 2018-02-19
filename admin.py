@@ -38,7 +38,7 @@ def runserver():
     parse_command_line()    # 解析命令行，输出logging日志
     app = Application()
     http_server = HTTPServer(app, xheaders=True)
-    port = 8897
+    port = 4861
     if len(sys.argv) >= 2:
         port = int(sys.argv[1])
     http_server.listen(port)

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding=utf8
 
-from handler import BaseHandler, AdminBaseHandler, WXBaseHandler
-from lib.route import Route
-from lib.model import *
 import setting
 import simplejson
 import qrcode
@@ -14,6 +11,10 @@ import logging
 import uuid
 import traceback
 from lib.give_score.demo import YzScore
+from handler import BaseHandler, AdminBaseHandler, WXBaseHandler
+from lib.route import Route
+from lib.model import *
+
 
 # ---------------------------------------------后台---------------------------------------------------
 @Route(r'/index', name='index')  # 后台首页
@@ -148,6 +149,79 @@ class ProductDelHandler(AdminBaseHandler):
             pass
         self.redirect('/admin/products')
 
+#----------------------------------------------------------------------------
+"""后台用户管理"""
+#----------
+@Route(r'/admin/admin_user', name='admin_admin_user')  # 后台管理用户列表
+class AdminUserHandler(AdminBaseHandler):
+    def get(self):
+        page = int(self.get_argument("page", '1'))
+        # category = self.get_argument('category', 1)
+        keyword = self.get_argument("keyword", None)
+        active = int(self.get_argument("status", 1))
+        pagesize = setting.ADMIN_PAGESIZE
+        ft = (AdminUser.id > 0)
+        if active:
+            ft &= (AdminUser.active == active)
+        if keyword:
+            ft &= (AdminUser.username.contains(keyword))
+        adminUsers = AdminUser.select().where(ft)
+        total = adminUsers.count()
+        if total % pagesize > 0:
+            totalpage = total / pagesize + 1
+        else:
+            totalpage = total / pagesize
+        adminUsers = adminUsers.order_by(AdminUser.created.desc()).paginate(page, pagesize).aggregate_rows()
+        # categories = Category.select().where(Category.active==1)
+
+        self.render('admin/admin_user.html', active='admin_user', adminUsers=adminUsers, total=total,
+                    page=page, pagesize=pagesize, totalpage=totalpage,
+                    keyword=keyword, status=active, pid=[])
+
+@Route(r'/admin/admin_user_edit/(\d+)', name='admin_admin_user_edit')  # 后台用户添加
+class AdminUserEditHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        adminUser = None
+        if 0 < pid:
+            adminUser = AdminUser.get(id=pid)
+
+        self.render('admin/admin_user_edit.html', active='admin_user', adminUser=adminUser)
+
+    def post(self, pid):
+        result = {'flag': 0, 'msg': ''}
+        username = self.get_body_argument('username', None)
+        mobile = self.get_body_argument('mobile', None)
+        email = self.get_body_argument('email', None)
+        password = self.get_body_argument('password', None)
+
+        if pid == '0':
+            adminUser = AdminUser()
+            adminUser.created = int(time.time())
+            adminUser.active = 1
+        else:
+            adminUser = adminUser.get(id=pid)
+        adminUser.username = username
+        adminUser.mobile = mobile
+        adminUser.email = email
+        adminUser.password = AdminUser.create_password(password)
+        adminUser.save()
+
+        result['flag'] = 1
+        self.write(simplejson.dumps(result))
+
+@Route(r'/admin/admin_user_del/(\d+)', name='admin_admin_user_del')  # 用户删除
+class AdminUserDelHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        try:
+            adminUser = AdminUser.get(id=pid)
+            adminUser.active = 0
+            adminUser.save()
+        except:
+            pass
+        self.redirect('/admin/admin_admin_user')
+#-----------------------------------------------------------------------------
 
 @Route(r'/admin/shop_manager', name='admin_shop_manager')  # 店长列表
 class AdminShopManagerHandler(AdminBaseHandler):
@@ -170,7 +244,7 @@ class AdminShopManagerHandler(AdminBaseHandler):
                     page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
 
 @Route(r'/admin/user', name='admin_user')  # 客户列表
-class AdminShopManagerHandler(AdminBaseHandler):
+class UserHandler(AdminBaseHandler):
     def get(self):
         page = int(self.get_argument("page", '1'))
         keyword = self.get_argument("keyword", None)
