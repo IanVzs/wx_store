@@ -90,6 +90,7 @@ class User(db.Model):
     id = PrimaryKeyField()  # 主键
     openid = CharField(unique=True, max_length=255)  # 微信openid
     name = CharField(max_length=32)  # 昵称
+    real_name = CharField(max_length=32)  # 真实姓名
     mobile = CharField(max_length=32)  # 电话
     code = CharField(max_length=32)  # 推广码
     pid = IntegerField(default=0)  # 由哪个用户推广而来，上级用户ID
@@ -98,7 +99,13 @@ class User(db.Model):
     level = IntegerField(default=1)  # 分销级别
     yz_user_info = TextField(default='')  # 有赞用户信息
     created = IntegerField(default=0)  # 注册时间
-    token = CharField()  # 推广码
+    token = CharField()  # 登录令牌
+    status = IntegerField(default=0)  # 0普通，1待审核，2通过，-1拒绝；审核通过后grade增加A
+    area_code = CharField(default='')  # 地区码
+    store_name = CharField(default='')  # 店长店铺名称
+    birthday = DateField(default=0)  # 生日
+    sub_user_count = IntegerField(default=0) # 推荐用户数
+    amount_of_consumption = IntegerField(default=0) # 消费金额
 
     class Meta:
         db_table = 'user'
@@ -130,6 +137,37 @@ class Product(db.Model):
 
     class Meta:
         db_table = 'product'
+
+
+# 商品
+class ProductRecord(db.Model):
+    id = PrimaryKeyField()
+    product = ForeignKeyField(Product, related_name='records', db_column='product')
+    from_num = IntegerField()  # 总数量
+    to_num = IntegerField()  # 总数量
+    score_buy = IntegerField()  # 购买赠送积分
+    score_referrer = IntegerField()  # 推荐者赠送积分
+    price = IntegerField()  # 价格
+    count = IntegerField()  # 次数
+    created = IntegerField(default=0)  # 添加时间
+    active = IntegerField(default=1)  # 0删除 1正常
+    rule = IntegerField(default=0) # rule 的id
+
+    class Meta:
+        db_table = 'product_record'
+
+
+# 商品
+class Rule(db.Model):
+    id = PrimaryKeyField()
+    type = IntegerField()  # 赠送积分方式 0消费奖励 1推荐奖励
+    number = IntegerField()  # 达到的数值
+    score = IntegerField()  # 积分
+    created = IntegerField(default=0)  # 添加时间
+    active = IntegerField(default=1)  # 0删除 1正常
+
+    class Meta:
+        db_table = 'rule'
 
 
 # 商品

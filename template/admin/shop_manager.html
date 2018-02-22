@@ -9,11 +9,11 @@
 <div class="row">
     <nav>
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">商品管理</a>
+            <a class="navbar-brand" href="#">店长管理</a>
         </div>
         <div class="pull-right">
             <form class="navbar-form navbar-left" action="" method="get" role="search">
-                <a id='newproduct' type="button" class="btn btn-info btn-xs" href="#" onclick="addRelease('0', 'add')" style="padding:8px 4px;background:#528ACB;color:#fff;border:none;border-radius:4px;font-size:14px;margin-right:10px;">添加商品</a>
+                <a id='newproduct' type="button" class="btn btn-info btn-xs" href="#" onclick="addRelease('0', 'add')" style="padding:8px 4px;background:#528ACB;color:#fff;border:none;border-radius:4px;font-size:14px;margin-right:10px;">添加店长</a>
                 <div class="input-group custom-search-form">
                     <input type="text" name="keyword" class="form-control" style="width:210px;height:34px;border:1px solid #ccc;border-bottom-left-radius:4px;border-top-left-radius:4px;" value="{{keyword or ''}}" placeholder="按商品名查找" />
                     <span class="input-group-btn">
@@ -121,8 +121,8 @@
 
     function addRelease(pid, act) {
         var title = '编辑产品';
-        var url = '/admin/product_edit/'+pid;
-        var del_url = '/admin/product_del/'+pid;
+        var url = '/admin/manager_edit/'+pid;
+        var del_url = '/admin/manager_del/'+pid;
         if (act == 'add') {
             pop(title, url);
         } else if (confirm("确定要删除吗？")) {

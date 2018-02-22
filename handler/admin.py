@@ -48,6 +48,7 @@ class LoginHandler(BaseHandler):
                 else:
                     self.flash("密码错误")
             except Exception, e:
+                logging.info(traceback.format_exc())
                 self.flash("此用户不存在")
         else:
             self.flash("请输入用户名密码")
@@ -149,6 +150,7 @@ class ProductDelHandler(AdminBaseHandler):
             pass
         self.redirect('/admin/products')
 
+
 #----------------------------------------------------------------------------
 """后台用户管理"""
 #----------
@@ -200,7 +202,7 @@ class AdminUserEditHandler(AdminBaseHandler):
             adminUser.created = int(time.time())
             adminUser.active = 1
         else:
-            adminUser = adminUser.get(id=pid)
+            adminUser = AdminUser.get(id=pid)
         adminUser.username = username
         adminUser.mobile = mobile
         adminUser.email = email
@@ -243,6 +245,7 @@ class AdminShopManagerHandler(AdminBaseHandler):
         self.render('admin/shop_manager.html', active='shop_manager', users=users, total=total,
                     page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
 
+
 @Route(r'/admin/user', name='admin_user')  # 客户列表
 class UserHandler(AdminBaseHandler):
     def get(self):
@@ -263,11 +266,222 @@ class UserHandler(AdminBaseHandler):
         self.render('admin/user.html', active='user', users=users, total=total,
                     page=page, pagesize=pagesize, totalpage=totalpage, keyword=keyword)
 
+
+@Route(r'/admin/manager', name='admin_manager')  # 店长添加
+class ManagerHandler(AdminBaseHandler):
+    def get(self):
+        province = self.get_argument("province", '')
+        city = self.get_argument("city", '')
+        keyword = self.get_argument("keyword", '')
+        page = int(self.get_argument("page", '1') if len(self.get_argument("page", '1')) > 0 else '1')
+        pagesize = self.settings['admin_pagesize']
+        status = self.get_argument("status", '')
+        download = self.get_argument('download', '')
+        default_province = ''
+        default_city = ''
+        ft = (User.status != 0)
+        if status:
+            status = int(status)
+            ft = (User.status == status)
+        if city and city != '':
+            default_province = city[:4]
+            default_city = city
+            city += '%'
+            ft &= (User.area_code % city)
+        elif province and province != '':
+            default_province = province
+            province += '%'
+            ft &= (User.area_code % province)
+        if keyword:
+            ft &= ((User.name.contains(keyword)) | (User.mobile.contains(keyword)))
+
+        cfs = User.select().where(ft)
+        # if download == '1':
+        #     fp = open('/home/www/workspace/czj/upload/stores.csv', 'w')
+        #     fp.write(u'店名,联系人,电话,地址,详细地址,创建时间,自注册起出单数,积分\n'.encode('gb18030'))
+        #     for store in Store.select().where(ft).order_by(Store.area_code.asc()):
+        #         io_count = InsuranceOrder.select().where(InsuranceOrder.store == store,
+        #                                                  InsuranceOrder.status == 3).count()
+        #         string = '%s,%s,%s,%s,%s,%s,%s,%s\n' % (store.name, store.linkman, store.mobile,
+        #                                                 Area.get_detailed_address(store.area_code), store.address,
+        #                                                 time.strftime('%Y-%m-%d', time.localtime(store.created)),
+        #                                                 io_count, store.score)
+        #         fp.write(string.encode('gb18030'))
+        #     fp.close()
+        #     self.redirect('/upload/stores.csv')
+        total = cfs.count()
+        if total % pagesize > 0:
+            totalpage = total / pagesize + 1
+        else:
+            totalpage = total / pagesize if (total / pagesize) > 0 else 1
+        cfs = cfs.paginate(page, pagesize)
+        items = Area.select().where(Area.pid == 0)
+        print(items.count())
+        self.render('/admin/manager.html', users=cfs, total=total, page=page, pagesize=pagesize,
+                    totalpage=totalpage, active='manager', status=status, keyword=keyword, Area=Area, items=items,
+                    province=default_province, city=default_city)
+
+
+@Route(r'/admin/manager_del/(\d+)', name='admin_manager_del')  # 店长删除
+class ManagerDelHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        try:
+            product = Product.get(id=pid)
+            product.active = 0
+            product.save()
+        except:
+            pass
+        self.redirect('/admin/products')
+
+
 @Route(r'/admin/upload_file', name='admin_upload_file')  # 图片上传
 class UploadFileHandler(AdminBaseHandler):
     def get(self):
         data = self.get_argument('data', '')
         self.render('admin/add_file.html', active='pic', data=data)
+
+
+@Route(r'/admin/recommend', name='admin_recommend')  # 推荐奖励
+class RecommendHandler(AdminBaseHandler):
+    def get(self):
+        rules = Rule.select().where(Rule.type == 1, Rule.active == 1)
+        self.render('admin/recommend.html', active='recommend', rules=rules)
+
+
+@Route(r'/admin/recommend_edit/(\d+)', name='admin_recommend_edit')  # 推荐奖励添加
+class RecommendEditHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        rule = None
+        if 0 < pid:
+            rule = Rule.get(id=pid)
+
+        self.render('admin/recommend_edit.html', active='recommend', rule=rule)
+
+    def post(self, pid):
+        result = {'flag': 0, 'msg': ''}
+        score = self.get_body_argument('score', None)
+        score = int(score) if score else 0
+        number = self.get_body_argument('number', None)
+        number = int(number) if number else 0
+
+        if pid == '0':
+            rule = Rule()
+            rule.created = int(time.time())
+            rule.active = 1
+            rule.type = 1
+        else:
+            rule = Rule.get(id=pid)
+        rule.score = score
+        rule.number = number
+        rule.save()
+        result['flag'] = 1
+        self.write(simplejson.dumps(result))
+
+
+@Route(r'/admin/recommend_del/(\d+)', name='admin_recommend_del')  # 产品删除
+class RecommendDelHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        try:
+            rule = Rule.get(id=pid)
+            rule.active = 0
+            rule.save()
+        except:
+            pass
+        self.redirect('/admin/recommend')
+
+
+@Route(r'/admin/consumption', name='admin_consumption')  # 消费奖励
+class ConsumptionHandler(AdminBaseHandler):
+    def get(self):
+        rules = Rule.select().where(Rule.type == 0, Rule.active == 1)
+        self.render('admin/consumption.html', active='consumption', rules=rules)
+
+
+@Route(r'/admin/consumption_edit/(\d+)', name='admin_consumption_edit')  # 推荐奖励添加
+class ConsumptionEditHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        rule = None
+        if 0 < pid:
+            rule = Rule.get(id=pid)
+
+        self.render('admin/consumption_edit.html', active='consumption', rule=rule)
+
+    def post(self, pid):
+        result = {'flag': 0, 'msg': ''}
+        score = self.get_body_argument('score', None)
+        score = int(score) if score else 0
+        number = self.get_body_argument('number', None)
+        number = int(number) if number else 0
+
+        if pid == '0':
+            rule = Rule()
+            rule.created = int(time.time())
+            rule.active = 1
+            rule.type = 0
+        else:
+            rule = Rule.get(id=pid)
+        rule.score = score
+        rule.number = number
+        rule.save()
+        result['flag'] = 1
+        self.write(simplejson.dumps(result))
+
+
+@Route(r'/admin/consumption_del/(\d+)', name='admin_consumption_del')  # 产品删除
+class ConsumptionDelHandler(AdminBaseHandler):
+    def get(self, pid):
+        pid = int(pid)
+        try:
+            rule = Rule.get(id=pid)
+            rule.active = 0
+            rule.save()
+        except:
+            pass
+        self.redirect('/admin/consumption')
+
+
+@Route(r'/admin/area_statistics', name='admin_area_statistics')  # 地区统计
+class AreaStatisticsHandler(AdminBaseHandler):
+    def get(self):
+        province = self.get_argument('begin_date', '')
+        begin_date = self.get_argument('begin_date', '')
+        end_date = self.get_argument('end_date', '')
+        download = self.get_argument('download', '')
+        begin = None
+        end = None
+        if begin_date and end_date:
+            begin = time.mktime(time.strptime(begin_date + " 00:00:00", "%Y-%m-%d %H:%M:%S"))
+            end = time.mktime(time.strptime(end_date + " 23:59:59", "%Y-%m-%d %H:%M:%S"))
+        else:
+            begin = time.mktime(time.strptime(time.strftime('%Y-%m', time.localtime()), "%Y-%m"))
+            end = time.time()
+
+        self.render('admin/area_statistics.html', active='area_statistics', begin_date=begin_date,
+                    end_date=end_date)
+
+
+@Route(r'/admin/manager_statistics', name='admin_manager_statistics')  # 店长统计
+class ManagerStatisticsHandler(AdminBaseHandler):
+    def get(self):
+        province = self.get_argument('begin_date', '')
+        begin_date = self.get_argument('begin_date', '')
+        end_date = self.get_argument('end_date', '')
+        download = self.get_argument('download', '')
+        begin = None
+        end = None
+        if begin_date and end_date:
+            begin = time.mktime(time.strptime(begin_date + " 00:00:00", "%Y-%m-%d %H:%M:%S"))
+            end = time.mktime(time.strptime(end_date + " 23:59:59", "%Y-%m-%d %H:%M:%S"))
+        else:
+            begin = time.mktime(time.strptime(time.strftime('%Y-%m', time.localtime()), "%Y-%m"))
+            end = time.time()
+
+        self.render('admin/area_statistics.html', active='area_statistics', begin_date=begin_date,
+                    end_date=end_date)
 
 
 # ---------------------------------------------微信端---------------------------------------------------
@@ -334,18 +548,48 @@ class MobileQrcodeHandler(WXBaseHandler):
             token = user.token
             token = self.update_token(token)
             user.token = token
-            user.save()
             self.set_token(user.token, user.id)
             if 'A' not in user.grade:
                 try:
                     fans_id = simplejson.loads(user.yz_user_info)['response']['user']['user_id']
                     self.add_score(user, product_id, num, Yz, fans_id)
+
+                    _product = Product.select().where(Product.id == product_id)
+                    price = _product.price
+                    user.amount_of_consumption += price
+                    user.save()
+                    p_ruleIDs = Rule.select().where(Rule.number < user.amount_of_consumption, Rule.type == 0)  # 符合奖励积分条件的所有
+                    if p_ruleIDs.count() > 0:
+                        # 满足最低增加积分要求
+                        recorders = ScoreRecord.select().where(ScoreRecord.user == user.id)
+                        ruleRecoder = []
+                        for recorde in recorders:
+                            ruleRecoder.append(recorde.rule)  # 此用户所有已经完成的推荐奖励 id
+                        for __id in p_ruleIDs:
+                            if __id.id not in ruleRecoder:
+                                # 如此奖励未发放
+                                score = Rule.get(id=__id.id)
+                                Yz.add_score(score, fans_id=fans_id)  # 增加积分
+                                # 添加记录
+                                record = ScoreRecord()
+                                record.user = user.id
+                                record.score = score
+                                record.info = u'下线购买二维码产品赠送积分'
+                                record.created = time.time()
+                                record.rule = __id.id
+                                record.save()
                 except:
                     pass
             self.redirect('https://h5.youzan.com/v2/usercenter/8sbIpUkeGQ?reft=1518450450886&spm=f69815501')
         else:
-            self.application.memcachedb.set(str(product_id)+str(num), openid, setting.user_expire)
-            self.render('wx/qrcode.html')
+            access_token = handler.get_access_token()
+            userinfo = handler.get_user_info(access_token, openid)
+            logging.info('-----wx user info: %s' % userinfo)
+            if 'nickname' in userinfo:
+                self.application.memcachedb.set(str(product_id)+str(num), openid, setting.user_expire)
+                self.render('wx/qrcode.html')
+            else:
+                self.render('wx/guanzhu.html')
 
     def post(self, product_id, num):
         mobile = self.get_body_argument('mobile', '')
@@ -375,27 +619,95 @@ class MobileQrcodeHandler(WXBaseHandler):
                 if p_users.count() > 0:
                     p_user = p_users[0]
                     user.pid = p_user.id
+                    p_user.sub_user_count += 1    # 推荐人数加1
                     user.save()
-                    if not p_user.mobile:
-                        p_user.mobile = p_mobile
-                        p_user.save()
-                # else:
-                #     # 根据手机号获取用户信息
-                #     p_openid = Yz.get_user_openid(p_mobile)
-                #     if p_openid:
-                #         p_users = User.select().where(User.mobile == p_mobile)
-                #         if p_users.count() > 0:
-                #             p_user = p_users[0]
-                #             user.pid = p_user.id
-                #             user.save()
-                #             p_user.mobile = p_mobile
-                #             p_user.save()2123啊
+                else:
+                    p_openid = Yz.get_user_openid(p_mobile)
+                    p_users = User.select().where(User.openid == p_openid)
+                    if p_users.count() > 0:
+                        p_user = p_users[0]
+                        user.pid = p_user.id
+                        user.sub_user_count += 1    # 推荐人数加1
+                        user.save()
+                        if not p_user.mobile:
+                            p_user.mobile = p_mobile
+                            p_user.save()
+                        p_ruleIDs = Rule.select().where(Rule.number < user.sub_user_count, Rule.type == 1)  # 符合奖励积分条件的所有
+                        if p_ruleIDs.count() > 0:
+                            # 满足最低增加积分要求
+                            recorders = ScoreRecord.select().where(ScoreRecord.user == p_user.id)
+                            ruleRecoder = []
+                            for recorde in recorders:
+                                ruleRecoder.append(recorde.rule)    # 此用户所有已经完成的推荐奖励 id
+                            for __id in p_ruleIDs:
+                                if __id.id not in ruleRecoder:
+                                    # 如此奖励未发放
+                                    score = Rule.get(id=__id.id)
+                                    Yz.add_score(score, mobile=p_user.mobile)   # 增加积分
+                                    # 添加记录
+                                    record = ScoreRecord()
+                                    record.user = p_user.id
+                                    record.score = score
+                                    record.info = u'推荐用户数目达一定数目赠送积分'
+                                    record.created = time.time()
+                                    record.rule = __id  .id
+                                    record.save()
+
             if 'A' not in user.grade:
                 logging.info('fans_id=%s' % fans_id)
                 self.add_score(user, product_id, num, Yz, fans_id)
 
         self.redirect('https://h5.youzan.com/v2/usercenter/8sbIpUkeGQ?reft=1518450450886&spm=f69815501')
 
+
+@Route(r'/mobile/myinfo/(\d+)', name='mobile_myinfo')  # 完善个人信息
+class MyinfoHandler(WXBaseHandler):
+    def get(self, user_id):
+        code = self.get_argument('code', '')
+        code = self.get_argument('code', '')
+        user = User.get(id=user_id)
+        items = Area.select().where(Area.pid == 0)
+        logging.info('----------%s' % items.count())
+        self.render('wx/myinfo.html', areas=items, user=user)
+
+
+@Route(r'/mobile/manager/(\d+)', name='mobile_manager')  # 完善个人信息
+class ManagerHandler(WXBaseHandler):
+    def get(self, user_id):
+        code = self.get_argument('code', '')
+        code = self.get_argument('code', '')
+        user = User.get(id=user_id)
+        items = Area.select().where(Area.pid == 0)
+        logging.info('----------%s' % items.count())
+        logging.info('--------user id--%s' % user.id)
+        self.render('wx/manager.html', areas=items, user=user)
+
+    def post(self, user_id):
+        result = {'flag': 0, 'msg': ''}
+        mobile = self.get_body_argument('mobile', '')
+        birthday = self.get_body_argument('birthday', '')
+        real_name = self.get_body_argument('real_name', '')
+        store_name = self.get_body_argument('store_name', '')
+        district = self.get_body_argument('district', '')
+        if not (mobile and birthday and real_name and store_name and district):
+            result['msg'] = u'请补全所有参数'
+            return self.write(simplejson.dumps(result))
+        else:
+            try:
+                time.mktime(time.strptime(birthday, '%Y-%m-%d'))
+            except:
+                result['msg'] = u'请按照规则填写生日，如：1993-5-15'
+                return self.write(simplejson.dumps(result))
+        user = User.get(id=user_id)
+        user.mobile = mobile
+        user.real_name = real_name
+        user.store_name = store_name
+        user.birthday = birthday
+        user.area_code = district
+        user.save()
+        result['flag'] = 1
+        result['msg'] = u'保存成功'
+        return self.write(simplejson.dumps(result))
 
 # ---------------------------------------------请求---------------------------------------------------
 @Route(r'/ajax/create_qrcode', name='ajax_create_qrcode')  # 生成二维码
@@ -454,6 +766,59 @@ class AjaxCreateQrcodeUrlHandler(AdminBaseHandler):
         product.save()
         result['flag'] = 1
         self.write(simplejson.dumps(result))
+
+
+@Route(r'/ajax/GetSubAreas', name='ajax_GetSubAreas')  # 获取下级区域
+class AjaxGetSubAreas(BaseHandler):
+    def get(self):
+        result = {'flag': 0, 'data': [], 'msg': ''}
+        try:
+            parent_code = self.get_argument("pcode", '')
+            keyword = '' + parent_code + '0%'
+            ft = (Area.code % keyword)
+            items = Area.select().where(ft)
+            result["flag"] = 1
+            result["data"] = []
+            for item in items:
+                result["data"].append({
+                    'id': item.id,
+                    'code': item.code,
+                    'name': item.name
+                })
+            else:
+                result['msg'] = u'无对应子区域'
+        except Exception, ex:
+            result["flag"] = 0
+            result["msg"] = ex.message
+        self.write(simplejson.dumps(result))
+
+
+@Route(r'/ajax/user_to_manager', name='ajax_user_to_manager')  # 获取下级区域
+class AjaxUserToManager(BaseHandler):
+    def post(self):
+        result = {'flag': 0, 'data': [], 'msg': ''}
+        id = self.get_body_argument("id", '')
+        state_type = self.get_body_argument("state_type", '')
+        print id, state_type
+        try:
+            id = int(id)
+            state_type = int(state_type)
+            user = User.get(id=id)
+            if state_type == 2:
+                if 'A' not in user.grade:
+                    user.grade += 'A'
+            else:
+                user.grade = user.grade.strip('A')
+            user.status = state_type
+            user.save()
+            result['flag'] = 1
+        except Exception, ex:
+            result["msg"] = ex.message
+        return self.write(simplejson.dumps(result))
+
+
+
+
 
 
 

@@ -79,7 +79,7 @@ class YzScore():
         print result
         logging.info('result=%s' % result)
         if 'response' in result:
-            return result['response']['open_id']
+            return simplejson.loads(result)['response']['open_id']
         else:
             return None
 
@@ -117,9 +117,10 @@ if __name__ == '__main__':
     #
     yz_score = YzScore()
     yz_score.get_token()
-    #yz_score.get_user_info('15929925857')
-    #'{"error_response":{"msg":"您的手机号尚未注册，请先注册","code":135200013}}'
-    #yz_score.get_user_openid("15929925857") # 查询OpenID
-    #yz_score.get_score("15929925857", "oMTlE1a08XjUGNKArU7V0ieQRMXc")   # 获取用户积分（手机可行OpenID无法找到）
+    yz_score.get_user_info('15929925857')
     yz_score.funs_info("oMTlE1a08XjUGNKArU7V0ieQRMXc")  # 查询用户全部信息
     # print(len('{"response":{"user":{"sex":"m","tags":[],"is_follow":true,"points":48,"traded_num":0,"traded_money":"0.00","level_info":{},"user_id":4917946994,"weixin_openid":"oMTlE1a08XjUGNKArU7V0ieQRMXc","nick":"roi","avatar":"http:\/\/wx.qlogo.cn\/mmopen\/CyXNIiaoCwfmRHWR2mFpCgKVZ0ekyPGTNXAibdvbOjf4pbeuOojhJibSIEb00XmJqiciaS94VLsKhnhqyQnPic3VHxriapNMob0vCOx\/132","follow_time":1517811113,"province":"\u9655\u897f","city":"","union_id":"oAE9E0kssuh7J66tFGBP7_rElq0A"}}}'))
+
+
+
+
